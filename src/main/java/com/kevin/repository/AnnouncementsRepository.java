@@ -20,7 +20,7 @@ public interface AnnouncementsRepository extends JpaRepository<Announcements, In
 			+ "a.expireDate,"
 			+ "a.title,"
 			+ "a.content) "
-			+ "FROM Announcements a WHERE a.title LIKE %:keyword% "
+			+ "FROM Announcements a WHERE (a.title LIKE %:keyword% or a.content LIKE %:keyword% )"
 			+ "AND a.postDate <= CURRENT_TIMESTAMP "
 	        + "AND a.expireDate >= CURRENT_TIMESTAMP") //顯示所有還在公告時間的公告
     Page<AnnouncementsDTO> searchActiveAnnouncementsByTitle(@Param("keyword") String keyword, Pageable pageable);

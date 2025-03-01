@@ -30,14 +30,14 @@ public class AnnouncementsController {
 	private AnnouncementsService announcementsService;
 
 	@GetMapping
-	public String showAllActiveAnnouncements(@RequestParam(required = false) String title,
+	public String showAllActiveAnnouncements(@RequestParam(required = false) String search,
 			@RequestParam(defaultValue = "1") Integer currentPage, Model model) {
 
-		GenericDTO<Page<AnnouncementsDTO>> result = announcementsService.showAllActiveAnnouncements(title, currentPage);
+		GenericDTO<Page<AnnouncementsDTO>> result = announcementsService.showAllActiveAnnouncements(search, currentPage);
 		Page<AnnouncementsDTO> resultPgb = result.getData();
 		if (result.isSuccess()) { // 如果成功
 			model.addAttribute("announcements", resultPgb.getContent());
-			model.addAttribute("title", title);
+			model.addAttribute("search", search);
 			model.addAttribute("currentPage", currentPage);
 			model.addAttribute("totalPages", resultPgb.getTotalPages());
 			model.addAttribute("totalElements", resultPgb.getTotalElements());
@@ -51,11 +51,11 @@ public class AnnouncementsController {
 	}
 
 	@GetMapping("/create") // 用來跳轉到發布公告頁面
-	public String showCreateForm(HttpSession session, Model model) {
+	public String showCreateForm(HttpSession session,RedirectAttributes redirectAttributes) {
 		Integer userId = (Integer) session.getAttribute("userId");
 		if (userId == null) {
-			model.addAttribute("success", false);
-			model.addAttribute("mssg", "您並未登入帳號");
+			redirectAttributes.addFlashAttribute("success", false);
+			redirectAttributes.addFlashAttribute("mssg", "您並未登入帳號");
 			return "redirect:/login";
 		}
 		return "announcements/createAnnouncement";
@@ -78,8 +78,8 @@ public class AnnouncementsController {
 		Integer userId = (Integer) session.getAttribute("userId");
 		
 		if (userId == null) {
-			model.addAttribute("success", false);
-			model.addAttribute("mssg", "您並未登入帳號");
+			redirectAttributes.addFlashAttribute("success", false);
+			redirectAttributes.addFlashAttribute("mssg", "您並未登入帳號");
 			return "redirect:/login";
 		}
 		
@@ -111,6 +111,7 @@ public class AnnouncementsController {
 			RedirectAttributes redirectAttributes) {
 		Integer userId = (Integer) session.getAttribute("userId");
 		if (userId == null) {
+			
 			return "redirect:/login";
 		}
 		if (title.trim().isEmpty() || content.trim().isEmpty()) {
@@ -150,6 +151,20 @@ public class AnnouncementsController {
 		    return "redirect:/announcements";
 		}
 		GenericDTO<Void> result = announcementsService.updateAnnouncement(userId, announcementId,  XSSFilter.sanitize(title) /*避免XSS*/, XSSFilter.sanitize(content)/*避免XSS*/, postDate, expireDate, fileIdsToDelete, files);
+		redirectAttributes.addFlashAttribute("success", result.isSuccess());
+		redirectAttributes.addFlashAttribute("mssg", result.getMessage());
+		return "redirect:/announcements";
+	}
+	@PostMapping("/delete")
+	public String deleteAnAnnouncement(@RequestParam Integer announcementId,HttpSession session,RedirectAttributes redirectAttributes) {
+		Integer userId = (Integer) session.getAttribute("userId");
+		
+		if (userId == null) {
+			redirectAttributes.addFlashAttribute("success", false);
+			redirectAttributes.addFlashAttribute("mssg", "您並未登入帳號");
+			return "redirect:/login";
+		}
+		GenericDTO<Void> result = announcementsService.deleteAnnouncement(userId, announcementId);
 		redirectAttributes.addFlashAttribute("success", result.isSuccess());
 		redirectAttributes.addFlashAttribute("mssg", result.getMessage());
 		return "redirect:/announcements";

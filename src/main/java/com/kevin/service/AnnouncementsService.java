@@ -38,24 +38,24 @@ public class AnnouncementsService {
 	@Autowired
 	private UsersRepository usersRepo;
 	
-	public GenericDTO<Page<AnnouncementsDTO>> showAllActiveAnnouncements(String title, Integer currentPage) {
+	public GenericDTO<Page<AnnouncementsDTO>> showAllActiveAnnouncements(String search, Integer currentPage) {
 		try {
 			if (currentPage == null || currentPage < 1) { //避免沒有輸入頁數
 				currentPage = 1;
 			}
-			if (title == null) { //避免搜尋沒有輸入
-				title = "";
+			if (search == null) { //避免搜尋沒有輸入
+				search = "";
 			}
 			
 			Pageable pgb = PageRequest.of(currentPage - 1, 10, Sort.Direction.DESC, "postDate");	
 			
-			List<AnnouncementsDTO> resultList = announcementsRepo.searchByTitleList(title);
+			List<AnnouncementsDTO> resultList = announcementsRepo.searchByTitleList(search);
 			for (AnnouncementsDTO singleDTO :resultList) {
 				System.out.println("userName"+singleDTO.getUserName());
 				System.out.println("title"+singleDTO.getTitle());
 				System.out.println("content"+singleDTO.getContent());
 			}
-			Page<AnnouncementsDTO> resultPgb = announcementsRepo.searchActiveAnnouncementsByTitle(title, pgb);
+			Page<AnnouncementsDTO> resultPgb = announcementsRepo.searchActiveAnnouncementsByTitle(search, pgb);
 			for (AnnouncementsDTO singleDTO :resultPgb.getContent()) {
 				System.out.println("Pgb");
 				System.out.println("Pgb userName"+singleDTO.getUserName());
