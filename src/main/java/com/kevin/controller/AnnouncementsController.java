@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ import com.kevin.util.XSSFilter;
 
 import jakarta.servlet.http.HttpSession;
 
+@CrossOrigin
 @Controller
 @RequestMapping("/announcements")
 public class AnnouncementsController {
@@ -164,6 +166,7 @@ public class AnnouncementsController {
 			redirectAttributes.addFlashAttribute("mssg", "您並未登入帳號");
 			return "redirect:/login";
 		}
+		System.out.println("有呼叫");
 		GenericDTO<Void> result = announcementsService.deleteAnnouncement(userId, announcementId);
 		redirectAttributes.addFlashAttribute("success", result.isSuccess());
 		redirectAttributes.addFlashAttribute("mssg", result.getMessage());

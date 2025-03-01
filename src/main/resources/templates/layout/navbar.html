@@ -43,7 +43,7 @@
 			</div>
 		</div>
 	</nav>
-	<script th:if="${success != null}">
+	<script th:if="${success != null}"> // 如果response 中有success 就抓出來
 		let success = [[${success}]];
 		let message = "[[${mssg}]]";
 
@@ -60,7 +60,7 @@
 			});
 		}
 	</script>
-	<script>
+	<script> // 用來處理登出
 		function logout() {
 			let logoutUrl = document.querySelector("a[onclick='logout()']").getAttribute("data-url"); // 取得 Thymeleaf 解析的 URL
 			let form = document.createElement("form");

@@ -65,11 +65,11 @@
 									type="button" class="btn btn-secondary">修改</button></a>
 						</td>
 						<td th:if="${session.userId != null}">
-							<a th:attr="data-id=${singleAnnouncement.announcementId}" onclick="confirmDelete(this)">
-								<button type="button" class="btn btn-danger">
-									刪除
-								</button>
-							</a>
+							<a href="javascript:void(0);" th:attr="onclick='confirmDelete(' + ${singleAnnouncement.announcementId} + ')'" >
+							        <button type="button" class="btn btn-danger">
+							            刪除
+							        </button>
+							    </a>
 						</td>
 					</tr>
 				</tbody>
@@ -103,9 +103,8 @@
 		</nav>
 	</div>
 	<script>
-	    function confirmDelete(button) {
-	        let announcementId = button.getAttribute("data-id"); // 取得公告 ID
-
+	    function confirmDelete(announcementId) {
+			console.log("announcementId: ", announcementId);
 	        Swal.fire({
 	            title: "確定要刪除這則公告嗎？",
 	            text: "刪除後將無法恢復！",
@@ -120,12 +119,12 @@
 	                // 動態建立 form
 	                let form = document.createElement("form");
 	                form.method = "post";
-	                form.action = "/announcements/delete";
+	                form.action = "/announcement/announcements/delete";
 
 	                // 隱藏 input 欄位存放 ID
 	                let input = document.createElement("input");
 	                input.type = "hidden";
-	                input.name = "id";
+	                input.name = "announcementId";
 	                input.value = announcementId;
 	                form.appendChild(input);
 
