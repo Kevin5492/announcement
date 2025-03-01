@@ -15,16 +15,18 @@ public class GenericDTO<T> {
         this.message = message;
         this.data = data;
     }
-
-    public static <T> GenericDTO<T> success(T data) {
+    public static <T> GenericDTO<T> success(String message) { // 請求成功 不需要帶data
+        return new GenericDTO<>(true, message, null);
+    }
+    public static <T> GenericDTO<T> success(T data) { // 請求成功 不需要帶 message 需要帶data
         return new GenericDTO<>(true, "請求成功", data);
     }
 
-    public static <T> GenericDTO<T> success(String message, T data) {
+    public static <T> GenericDTO<T> success(String message, T data) { // 請求失敗 需要帶data
         return new GenericDTO<>(true, message, data);
     }
 
-    public static <T> GenericDTO<T> error(String message) {
+    public static <T> GenericDTO<T> error(String message) {  // 請求失敗 不需要帶data
         return new GenericDTO<>(false, message, null);
     }
 
