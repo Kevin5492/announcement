@@ -2,12 +2,90 @@
 <html xmlns:th="http://www.thymeleaf.org/">
 
 <head>
-
-
+    <meta charset="UTF-8">
+    <title>修改公告</title>
+    <script src="https://cdn.tiny.cloud/1/bn11dhhfours91ojc2qsk4flk6fa782xhmxa8e0culoss1zs/tinymce/5/tinymce.min.js"
+        referrerpolicy="origin"></script>
 </head>
 
 <body>
-	<div th:replace="~{layout/navbar}"></div>
+    <div th:replace="~{layout/navbar}"></div>
+
+    <div class="container mt-4">
+        <h1>修改公告</h1>
+
+        <!-- 成功/失敗訊息 -->
+        <div th:if="${success != null}">
+            <div class="alert" th:classappend="${success} ? 'alert-success' : 'alert-danger'">
+                <p th:text="${mssg}">[訊息]</p>
+            </div>
+        </div>
+
+        <!-- 修改公告表單 -->
+        <form th:action="@{/announcements/edit}" method="post" enctype="multipart/form-data">
+
+            <!-- 隱藏公告 ID -->
+            <input type="hidden" name="announcementId" th:value="${announcement.announcementId}" />
+
+            <!-- 標題 -->
+            <div class="mb-3">
+                <label for="title" class="form-label">標題</label>
+                <input type="text" class="form-control" id="title" name="title" th:value="${announcement.title}" required />
+            </div>
+
+            <!-- 內容 -->
+            <div class="mb-3">
+                <label for="content" class="form-label">內容</label>
+                <textarea class="form-control" id="content" name="content" rows="5" th:text="${announcement.content}"></textarea>
+            </div>
+
+            <!-- 發佈日期 -->
+            <div class="mb-3">
+                <label for="postDate" class="form-label">發佈日期</label>
+                <input type="date" class="form-control" id="postDate" name="postDate"
+                    th:value="${#dates.format(announcement.postDate, 'yyyy-MM-dd')}" required />
+            </div>
+
+            <!-- 到期日期 -->
+            <div class="mb-3">
+                <label for="expireDate" class="form-label">到期日期</label>
+                <input type="date" class="form-control" id="expireDate" name="expireDate"
+                    th:value="${#dates.format(announcement.expireDate, 'yyyy-MM-dd')}" required />
+            </div>
+
+            <!-- 已上傳的檔案（可刪除） -->
+            <div class="mb-3" th:if="${not #lists.isEmpty(announcement.files)}">
+                <label class="form-label">已上傳的檔案</label>
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" th:each="file : ${announcement.files}">
+                        <a th:href="@{/files/download/{fileId}(fileId=${file.fileId})}" th:text="${file.fileName}">檔案名稱</a>
+                        <input type="checkbox" name="fileIdsToDelete" th:value="${file.fileId}" />
+                        <span class="text-danger">刪除</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 上傳新檔案 -->
+            <div class="mb-3">
+                <label for="files" class="form-label">上傳新檔案</label>
+                <input type="file" class="form-control" id="files" name="files" multiple />
+            </div>
+
+            <!-- 送出按鈕 -->
+            <button type="submit" class="btn btn-primary">更新公告</button>
+        </form>
+    </div>
+
+    <!-- TinyMCE 初始化 -->
+    <script>
+        tinymce.init({
+            selector: '#content',
+            menubar: false,
+            plugins: 'link image code',
+            toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | link image | code'
+        });
+    </script>
+
 </body>
 
 </html>

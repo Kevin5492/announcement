@@ -13,10 +13,18 @@ public interface FilesRepository extends JpaRepository<Files, Integer> {
 	@Query("SELECT new com.kevin.dto.FilesDTO("
 			+ "f.fileId, "
 			+ "f.fileName, "
-			+ "f.fileType, "
-			+ "f.fileData )"
+			+ "f.fileType)"
 			+ "from Files f "
 			+ "where f.announcement.announcementId = :announcementId")
 	List<FilesDTO> showAnnouncemnetFiles(@Param("announcementId") Integer announcementId);	
+	
+	@Query("SELECT new com.kevin.dto.FilesDTO("
+			+ "f.fileId, "
+			+ "f.fileName, "
+			+ "f.fileType, "
+			+ "f.fileData )"
+			+ "from Files f "
+			+ "where f.fileId= :fileId")
+	FilesDTO showFileById(@Param("fileId") Integer fileId);	
 
 }
