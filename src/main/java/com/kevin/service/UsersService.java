@@ -3,17 +3,20 @@ package com.kevin.service;
 import java.util.Date;
 import java.util.regex.Pattern;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.kevin.dto.GenericDTO;
-import com.kevin.dto.UsersReponseDTO;
 import com.kevin.model.Users;
 import com.kevin.repository.UsersRepository;
+import com.kevin.util.LogUtil;
 
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @Service 
 public class UsersService {
 	@Autowired
@@ -21,7 +24,9 @@ public class UsersService {
 
 	@Autowired
 	private UsersRepository usersRepo;
-
+	
+	private static final Logger log = LoggerFactory.getLogger(UsersService.class);
+	
 	@Transactional
 	public GenericDTO<Void> registerAUser(String userName, String phone, String password) {
 		 
@@ -53,12 +58,11 @@ public class UsersService {
 			user.setCreationDate(new Date());
 			user.setPhone(phone);
 			usersRepo.save(user);
-			System.out.println("有成功執行");
 			return new GenericDTO<Void>(true,"帳號新增成功，請使用該帳號登入",null);
 		} catch (DataIntegrityViolationException e) { // 如果插入時遇到違反資料庫 Unique Key 回傳號碼已存在
 			return new GenericDTO<Void>(false, "該號碼已存在",null);
 		}catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.logError(e);
 			return new GenericDTO<Void>(false, "帳號新增失敗，請重新嘗試",null);
 		}
 
@@ -76,7 +80,7 @@ public class UsersService {
 			}
 			return new GenericDTO<Integer>(false, "密碼錯誤，請重新嘗試",null);
 		}catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.logError(e);
 			return new GenericDTO<Integer>(false, "發生錯誤，登入失敗",null);
 		}
 		

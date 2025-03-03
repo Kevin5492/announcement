@@ -1,12 +1,13 @@
 package com.kevin.service;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,9 +25,9 @@ import com.kevin.model.Users;
 import com.kevin.repository.AnnouncementsRepository;
 import com.kevin.repository.FilesRepository;
 import com.kevin.repository.UsersRepository;
+import com.kevin.util.LogUtil;
 
 import jakarta.transaction.Transactional;
-
 @Service
 public class AnnouncementsService {
 
@@ -38,6 +39,9 @@ public class AnnouncementsService {
 
 	@Autowired
 	private UsersRepository usersRepo;
+	
+	private static final Logger log = LoggerFactory.getLogger(AnnouncementsService.class);
+
 
 	public GenericDTO<Page<AnnouncementsDTO>> showAllActiveAnnouncements(String search, Integer currentPage) {
 		try {
@@ -67,7 +71,7 @@ public class AnnouncementsService {
 			System.out.println("Page: "+resultPgb.getContent().size());
 			return GenericDTO.success("查詢成功", resultPgb);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.logError(e);
 			return GenericDTO.error("查詢失敗");
 		}
 	}
@@ -84,7 +88,7 @@ public class AnnouncementsService {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 
-			e.printStackTrace();
+			LogUtil.logError(e);
 			return GenericDTO.error("查詢失敗" );
 		}
 	}
@@ -118,6 +122,7 @@ public class AnnouncementsService {
 		} catch (IOException e) {
 			return GenericDTO.error("檔案添加失敗");
 		} catch (Exception e) {
+			LogUtil.logError(e);
 			return GenericDTO.error("新增失敗");
 		}
 
@@ -162,6 +167,7 @@ public class AnnouncementsService {
 		} catch (IOException e) {
 			return GenericDTO.error("檔案處理失敗");
 		} catch (Exception e) {
+			LogUtil.logError(e);
 			return GenericDTO.error("新增失敗");
 		}
 	}
@@ -182,7 +188,7 @@ public class AnnouncementsService {
 			announcementsRepo.delete(announcement);
 			return GenericDTO.success("公告刪除成功", null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LogUtil.logError(e);
 			return GenericDTO.error("刪除失敗");
 		}
 	}
