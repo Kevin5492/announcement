@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,45 +38,46 @@ public class AnnouncementsService {
 
 	@Autowired
 	private UsersRepository usersRepo;
-	
+
 	public GenericDTO<Page<AnnouncementsDTO>> showAllActiveAnnouncements(String search, Integer currentPage) {
 		try {
-			if (currentPage == null || currentPage < 1) { //避免沒有輸入頁數
+			if (currentPage == null || currentPage < 1) { // 避免沒有輸入頁數
 				currentPage = 1;
 			}
-			if (search == null) { //避免搜尋沒有輸入
+			if (search == null) { // 避免搜尋沒有輸入
 				search = "";
 			}
-			
-			Pageable pgb = PageRequest.of(currentPage - 1, 10, Sort.Direction.DESC, "postDate");	
-			
+
+			Pageable pgb = PageRequest.of(currentPage - 1, 5, Sort.Direction.DESC, "postDate");
+
 			List<AnnouncementsDTO> resultList = announcementsRepo.searchByTitleList(search);
-			for (AnnouncementsDTO singleDTO :resultList) {
-				System.out.println("userName"+singleDTO.getUserName());
-				System.out.println("title"+singleDTO.getTitle());
-				System.out.println("content"+singleDTO.getContent());
-			}
+//			for (AnnouncementsDTO singleDTO : resultList) {
+//				System.out.println("userName" + singleDTO.getUserName());
+//				System.out.println("title" + singleDTO.getTitle());
+//				System.out.println("content" + singleDTO.getContent());
+//			}
+			System.out.println("List: "+resultList.size());
 			Page<AnnouncementsDTO> resultPgb = announcementsRepo.searchActiveAnnouncementsByTitle(search, pgb);
-			for (AnnouncementsDTO singleDTO :resultPgb.getContent()) {
-				System.out.println("Pgb");
-				System.out.println("Pgb userName"+singleDTO.getUserName());
-				System.out.println("Pgb title"+singleDTO.getTitle());
-				System.out.println("Pgb content"+singleDTO.getContent());
-			}
-			
+//			for (AnnouncementsDTO singleDTO : resultPgb.getContent()) {
+//				System.out.println("Pgb");
+//				System.out.println("Pgb userName" + singleDTO.getUserName());
+//				System.out.println("Pgb title" + singleDTO.getTitle());
+//				System.out.println("Pgb content" + singleDTO.getContent());
+//			}
+			System.out.println("Page: "+resultPgb.getContent().size());
 			return GenericDTO.success("查詢成功", resultPgb);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return GenericDTO.error("查詢失敗：" + e.getMessage());
+			return GenericDTO.error("查詢失敗");
 		}
 	}
-	
-	public GenericDTO<AnnouncementsDTO> showAnAnnouncement(Integer announcementId){ //顯示一個完逞的公告
-		
+
+	public GenericDTO<AnnouncementsDTO> showAnAnnouncement(Integer announcementId) { // 顯示一個完逞的公告
+
 		try {
 			AnnouncementsDTO announcement = announcementsRepo.showAnAnnouncement(announcementId);
 			List<FilesDTO> files = filesRepo.showAnnouncemnetFiles(announcementId);
-			if (files!=null && files.size()!=0) {
+			if (files != null && files.size() != 0) {
 				announcement.setFiles(files);
 			}
 			return GenericDTO.success("查詢成功", announcement);
@@ -83,14 +85,13 @@ public class AnnouncementsService {
 			// TODO Auto-generated catch block
 
 			e.printStackTrace();
-			return GenericDTO.error("查詢失敗：" + e.getMessage());
+			return GenericDTO.error("查詢失敗" );
 		}
 	}
 
 	@Transactional // 新增一項公告
-	public GenericDTO<Void> createAnnouncement(Integer userId, String title, String content,
-			Date postDate,Date expireDate,
-			List<MultipartFile> files) {
+	public GenericDTO<Void> createAnnouncement(Integer userId, String title, String content, Date postDate,
+			Date expireDate, List<MultipartFile> files) {
 		try {
 			Optional<Users> userOp = usersRepo.findById(userId);
 			if (userOp.isEmpty()) {
@@ -102,30 +103,29 @@ public class AnnouncementsService {
 			announcement.setPostDate(postDate);
 			announcement.setExpireDate(expireDate);
 			announcement.setUser(userOp.get());
-			if (files == null) {
-				files = new ArrayList<>();
-			}
-			for (MultipartFile file : files) {
-				if (file.isEmpty()) {
-					return GenericDTO.error("檔案 " + file.getOriginalFilename() + " 為空，請重新上傳");
+			List<MultipartFile> validFiles = files.stream()
+			        .filter(file -> !file.isEmpty())  // 過濾掉空檔案
+			        .collect(Collectors.toList());// 上傳
+			
+				for (MultipartFile file : validFiles) {
+					Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
+					announcement.addFile(fileEntity); // 把file 加進announcement 中
 				}
-				Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
-				announcement.addFile(fileEntity); // 把file 加進announcement 中
-			}
+		
+			
 			announcementsRepo.save(announcement);
 			return GenericDTO.success("新增成功", null);
-		} catch (IOException e) { 
-			return GenericDTO.error("檔案處理失敗：" + e.getMessage());
+		} catch (IOException e) {
+			return GenericDTO.error("檔案添加失敗");
 		} catch (Exception e) {
-			return GenericDTO.error("新增失敗：" + e.getMessage());
+			return GenericDTO.error("新增失敗");
 		}
 
 	}
 
 	@Transactional
 	public GenericDTO<Void> updateAnnouncement(Integer userId, Integer announcementId, String title, String content,
-			Date postDate,Date expireDate,
-			List<Integer> fileIdsToDelete, List<MultipartFile> newFiles) {
+			Date postDate, Date expireDate, List<Integer> fileIdsToDelete, List<MultipartFile> newFiles) {
 		try {
 			Optional<Announcements> announcementOp = announcementsRepo.findById(announcementId);
 			if (announcementOp.isEmpty()) { // 檢查公告是不是不存在
@@ -142,15 +142,15 @@ public class AnnouncementsService {
 				}
 				filesRepo.deleteAll(filesToRemove);
 			}
-			if (newFiles != null) { // 上傳所有新增的檔案
-				for (MultipartFile file : newFiles) {
-					if (file.isEmpty()) {
-						return GenericDTO.error("檔案 " + file.getOriginalFilename() + " 為空，請重新上傳");
-					}
+			
+			List<MultipartFile> validFiles = newFiles.stream()
+			        .filter(file -> !file.isEmpty())  // 過濾掉空檔案
+			        .collect(Collectors.toList());// 上傳所有新增的檔案
+				for (MultipartFile file : validFiles) {
 					Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
 					announcement.addFile(fileEntity);
 				}
-			}
+			
 			announcement.setTitle(title);
 			announcement.setContent(content);
 			announcement.setPostDate(postDate);
@@ -160,13 +160,11 @@ public class AnnouncementsService {
 			return GenericDTO.success("公告更新成功", null);
 
 		} catch (IOException e) {
-			return GenericDTO.error("檔案處理失敗：" + e.getMessage());
+			return GenericDTO.error("檔案處理失敗");
 		} catch (Exception e) {
-			return GenericDTO.error("新增失敗：" + e.getMessage());
+			return GenericDTO.error("新增失敗");
 		}
 	}
-	
-
 
 	@Transactional
 	public GenericDTO<Void> deleteAnnouncement(Integer userId, Integer announcementId) {
@@ -185,7 +183,7 @@ public class AnnouncementsService {
 			return GenericDTO.success("公告刪除成功", null);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return GenericDTO.error("刪除失敗：" + e.getMessage());
+			return GenericDTO.error("刪除失敗");
 		}
 	}
 }

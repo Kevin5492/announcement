@@ -21,19 +21,19 @@
 		</form>
 
 		<!-- 顯示總筆數與分頁資訊 -->
-		<p th:if="${totalElements != null}">
-			總共有 <span th:text="${totalElements}">0</span> 筆公告，
+		<p th:if="${announcementsPgb.totalElements != null}">
+			總共有 <span th:text="${announcementsPgb.totalElements}">0</span> 筆公告，
 			目前在第 <span th:text="${currentPage}">1</span> 頁，
-			共 <span th:text="${totalPages}">1</span> 頁。
+			共 <span th:text="${announcementsPgb.totalPages}">1</span> 頁。
 		</p>
 
 		<!-- 如果沒有任何公告，顯示提示文字 -->
-		<div class="alert alert-info" role="alert" th:if="${#lists.isEmpty(announcements)}">
+		<div class="alert alert-info" role="alert" th:if="${#lists.isEmpty(announcementsPgb.content)}">
 			目前沒有符合條件的公告。
 		</div>
 
 		<!-- 公告列表：以表格方式呈現 -->
-		<div class="table-responsive" th:if="${!#lists.isEmpty(announcements)}">
+		<div class="table-responsive" th:if="${!#lists.isEmpty(announcementsPgb.content)}">
 			<table class="table table-striped">
 				<thead>
 					<tr>
@@ -41,14 +41,14 @@
 						<th>公告內容</th>
 						<th>發佈人</th>
 						<th>發佈日期</th>
-						<th>到期日期</th>
+						<th>截止日期</th>
 						<th>查看詳情</th>
 						<th th:if="${session.userId != null}">修改</th>
 						<th th:if="${session.userId != null}">刪除</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="singleAnnouncement : ${announcements}">
+					<tr th:each="singleAnnouncement : ${announcementsPgb.content}">
 						<td th:text="${singleAnnouncement.title}">標題</td>
 						<!-- 使用 th:utext 讓資料庫中的 HTML 內容直接渲染 -->
 						<td th:utext="${singleAnnouncement.content}">公告內容</td>
@@ -76,7 +76,7 @@
 		</div>
 
 		<!-- 分頁功能 -->
-		<nav th:if="${totalPages > 1}" aria-label="Page navigation">
+		<nav th:if="${announcementsPgb.totalPages > 1}" aria-label="Page navigation">
 			<ul class="pagination justify-content-center mt-4">
 				<!-- 上一頁 -->
 				<li class="page-item" th:if="${currentPage > 1}">
@@ -86,14 +86,14 @@
 				</li>
 
 				<!-- 中間頁數迴圈 -->
-				<li class="page-item" th:each="page : ${#numbers.sequence(1, totalPages)}"
+				<li class="page-item" th:each="page : ${#numbers.sequence(1, announcementsPgb.totalPages)}"
 					th:classappend="${page} == ${currentPage} ? ' active' : ''">
 					<a class="page-link" th:text="${page}"
 						th:href="@{/announcements(currentPage=${page}, search=${search})}">1</a>
 				</li>
 
 				<!-- 下一頁 -->
-				<li class="page-item" th:if="${currentPage < totalPages}">
+				<li class="page-item" th:if="${currentPage < announcementsPgb.totalPages}">
 					<a class="page-link" th:href="@{/announcements(currentPage=${currentPage + 1}, search=${search})}">
 						下一頁
 					</a>

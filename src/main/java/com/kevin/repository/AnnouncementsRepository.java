@@ -12,7 +12,7 @@ import com.kevin.dto.AnnouncementsDTO;
 import com.kevin.model.Announcements;
 
 public interface AnnouncementsRepository extends JpaRepository<Announcements, Integer> {
-	@Query("SELECT new com.kevin.dto.AnnouncementsDTO("
+	@Query(value = "SELECT new com.kevin.dto.AnnouncementsDTO("
 			+ "a.announcementId,"
 			+ "a.user.userId, "
 			+ "a.user.userName, "
@@ -22,7 +22,12 @@ public interface AnnouncementsRepository extends JpaRepository<Announcements, In
 			+ "a.content) "
 			+ "FROM Announcements a WHERE (a.title LIKE %:keyword% or a.content LIKE %:keyword% )"
 			+ "AND a.postDate <= CURRENT_TIMESTAMP "
-	        + "AND a.expireDate >= CURRENT_TIMESTAMP") //顯示所有還在公告時間的公告
+	        + "AND a.expireDate >= CURRENT_TIMESTAMP"
+	        ,
+	        countQuery = "SELECT count(a) FROM Announcements a " +
+	         "WHERE (a.title LIKE %:keyword% OR a.content LIKE %:keyword%) " +
+	         "AND a.postDate <= CURRENT_TIMESTAMP " +
+	         "AND a.expireDate >= CURRENT_TIMESTAMP") //顯示所有還在公告時間的公告
     Page<AnnouncementsDTO> searchActiveAnnouncementsByTitle(@Param("keyword") String keyword, Pageable pageable);
 	
 	@Query("SELECT new com.kevin.dto.AnnouncementsDTO("
@@ -33,7 +38,7 @@ public interface AnnouncementsRepository extends JpaRepository<Announcements, In
 			+ "a.expireDate,"
 			+ "a.title,"
 			+ "a.content) "
-			+ "FROM Announcements a WHERE a.announcementId = :announcementId")
+			+ "FROM Announcements a WHERE a.announcementId = :announcementId") //顯示單筆公告
 	AnnouncementsDTO showAnAnnouncement(@Param("announcementId") Integer announcementId);
 	
 	@Query("SELECT new com.kevin.dto.AnnouncementsDTO("
@@ -44,6 +49,8 @@ public interface AnnouncementsRepository extends JpaRepository<Announcements, In
 			+ "a.expireDate,"
 			+ "a.title,"
 			+ "a.content) "
-			+ "FROM Announcements a WHERE a.title LIKE %:keyword%")//顯示所有公告 測試用
+			+ "FROM Announcements a WHERE (a.title LIKE %:keyword% or a.content LIKE %:keyword% )"
+			+ "AND a.postDate <= CURRENT_TIMESTAMP "
+	        + "AND a.expireDate >= CURRENT_TIMESTAMP")//顯示所有公告 測試用
     List<AnnouncementsDTO> searchByTitleList(@Param("keyword") String keyword);
 }

@@ -38,11 +38,13 @@ public class AnnouncementsController {
 		GenericDTO<Page<AnnouncementsDTO>> result = announcementsService.showAllActiveAnnouncements(search, currentPage);
 		Page<AnnouncementsDTO> resultPgb = result.getData();
 		if (result.isSuccess()) { // 如果成功
-			model.addAttribute("announcements", resultPgb.getContent());
+			model.addAttribute("announcementsPgb", resultPgb);
 			model.addAttribute("search", search);
 			model.addAttribute("currentPage", currentPage);
-			model.addAttribute("totalPages", resultPgb.getTotalPages());
-			model.addAttribute("totalElements", resultPgb.getTotalElements());
+			System.out.println("TotalPages: "+resultPgb.getTotalPages());
+			System.out.println("TotalElements: "+resultPgb.getTotalElements());
+//			model.addAttribute("totalPages", resultPgb.getTotalPages());
+//			model.addAttribute("totalElements", resultPgb.getTotalElements());
 
 		} else {
 			model.addAttribute("success", false);

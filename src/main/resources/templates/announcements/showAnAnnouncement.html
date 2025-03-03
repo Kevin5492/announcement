@@ -31,7 +31,7 @@
 				<p><strong>發佈人：</strong> <span th:text="${announcement.userName}"></span></p>
 				<p><strong>發佈日期：</strong> <span th:text="${#dates.format(announcement.postDate, 'yyyy-MM-dd')}"></span>
 				</p>
-				<p><strong>到期日期：</strong> <span
+				<p><strong>截止日期：</strong> <span
 						th:text="${#dates.format(announcement.expireDate, 'yyyy-MM-dd')}"></span></p>
 
 				<!-- 附件列表 -->
