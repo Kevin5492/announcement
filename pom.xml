@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<scope>provided</scope>
+		
 		</dependency>
 
 		<dependency>
@@ -93,9 +93,20 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+			</dependency>
 	</dependencies>
 
 	<build>
+	 <finalName>announcement</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -148,17 +159,30 @@
 				<artifactId>native-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <configuration>
+    <skip>true</skip>
+        <layout>WAR</layout> <!-- 這一行很重要，確保生成的是標準 WAR -->
+        <executable>false</executable>
+        <executions>
+        	<execution>
+      			<goals>
+        			<goal>repackage</goal>
+      			</goals>
+
+        
+
+    </execution>
+  </executions>
+        <excludes>
+            <exclude>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+            </exclude>
+        </excludes>
+    </configuration>
+</plugin>
 		</plugins>
 	</build>
 

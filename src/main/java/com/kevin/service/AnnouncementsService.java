@@ -28,6 +28,7 @@ import com.kevin.repository.UsersRepository;
 import com.kevin.util.LogUtil;
 
 import jakarta.transaction.Transactional;
+
 @Service
 public class AnnouncementsService {
 
@@ -39,9 +40,9 @@ public class AnnouncementsService {
 
 	@Autowired
 	private UsersRepository usersRepo;
-	
-	private static final Logger log = LoggerFactory.getLogger(AnnouncementsService.class);
 
+	private static final Logger log = LoggerFactory.getLogger(AnnouncementsService.class);
+	private static final long maxSize = 10 * 1024 * 1024; // 檔案大小限制
 
 	public GenericDTO<Page<AnnouncementsDTO>> showAllActiveAnnouncements(String search, Integer currentPage) {
 		try {
@@ -60,7 +61,7 @@ public class AnnouncementsService {
 //				System.out.println("title" + singleDTO.getTitle());
 //				System.out.println("content" + singleDTO.getContent());
 //			}
-			System.out.println("List: "+resultList.size());
+			System.out.println("List: " + resultList.size());
 			Page<AnnouncementsDTO> resultPgb = announcementsRepo.searchActiveAnnouncementsByTitle(search, pgb);
 //			for (AnnouncementsDTO singleDTO : resultPgb.getContent()) {
 //				System.out.println("Pgb");
@@ -68,7 +69,7 @@ public class AnnouncementsService {
 //				System.out.println("Pgb title" + singleDTO.getTitle());
 //				System.out.println("Pgb content" + singleDTO.getContent());
 //			}
-			System.out.println("Page: "+resultPgb.getContent().size());
+			System.out.println("Page: " + resultPgb.getContent().size());
 			return GenericDTO.success("查詢成功", resultPgb);
 		} catch (Exception e) {
 			LogUtil.logError(e);
@@ -89,7 +90,7 @@ public class AnnouncementsService {
 			// TODO Auto-generated catch block
 
 			LogUtil.logError(e);
-			return GenericDTO.error("查詢失敗" );
+			return GenericDTO.error("查詢失敗");
 		}
 	}
 
@@ -107,16 +108,17 @@ public class AnnouncementsService {
 			announcement.setPostDate(postDate);
 			announcement.setExpireDate(expireDate);
 			announcement.setUser(userOp.get());
-			List<MultipartFile> validFiles = files.stream()
-			        .filter(file -> !file.isEmpty())  // 過濾掉空檔案
-			        .collect(Collectors.toList());// 上傳
-			
-				for (MultipartFile file : validFiles) {
-					Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
-					announcement.addFile(fileEntity); // 把file 加進announcement 中
+			List<MultipartFile> validFiles = files.stream().filter(file -> !file.isEmpty()) // 過濾掉空檔案
+					.collect(Collectors.toList());// 上傳
+
+			for (MultipartFile file : validFiles) {
+				if (file.getSize() > maxSize) {
+					return GenericDTO.error("檔案 " + file.getOriginalFilename() + " 超過大小限制 (2MB)");
 				}
-		
-			
+				Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
+				announcement.addFile(fileEntity); // 把file 加進announcement 中
+			}
+
 			announcementsRepo.save(announcement);
 			return GenericDTO.success("新增成功", null);
 		} catch (IOException e) {
@@ -147,15 +149,17 @@ public class AnnouncementsService {
 				}
 				filesRepo.deleteAll(filesToRemove);
 			}
-			
-			List<MultipartFile> validFiles = newFiles.stream()
-			        .filter(file -> !file.isEmpty())  // 過濾掉空檔案
-			        .collect(Collectors.toList());// 上傳所有新增的檔案
-				for (MultipartFile file : validFiles) {
-					Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
-					announcement.addFile(fileEntity);
+
+			List<MultipartFile> validFiles = newFiles.stream().filter(file -> !file.isEmpty()) // 過濾掉空檔案
+					.collect(Collectors.toList());// 上傳所有新增的檔案
+			for (MultipartFile file : validFiles) {
+				if (file.getSize() > maxSize) {
+					return GenericDTO.error("檔案 " + file.getOriginalFilename() + " 超過大小限制 (2MB)");
 				}
-			
+				Files fileEntity = new Files(file.getOriginalFilename(), file.getContentType(), file.getBytes());
+				announcement.addFile(fileEntity);
+			}
+
 			announcement.setTitle(title);
 			announcement.setContent(content);
 			announcement.setPostDate(postDate);

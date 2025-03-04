@@ -69,6 +69,7 @@
             <div class="mb-3">
                 <label for="files" class="form-label">上傳新檔案</label>
                 <input type="file" class="form-control" id="files" name="files" multiple />
+				<small class="text-danger" id="fileError" style="display: none;">檔案大小不能超過 10MB</small>
             </div>
 
             <!-- 送出按鈕 -->
@@ -84,6 +85,26 @@
             plugins: 'link image code',
             toolbar: 'undo redo | styleselect | bold italic | alignleft aligncenter alignright | link image | code'
         });
+		
+		document.getElementById("files").addEventListener("change", function () {
+		    const maxSize = 2 * 1024 * 1024; // 2MB
+		    const files = this.files;
+		    let valid = true;
+
+		    for (let i = 0; i < files.length; i++) {
+		        if (files[i].size > maxSize) {
+		            valid = false;
+		            break;
+		        }
+		    }
+
+		    if (!valid) {
+		        document.getElementById("fileError").style.display = "block";
+		        this.value = ""; // 清空選擇的檔案
+		    } else {
+		        document.getElementById("fileError").style.display = "none";
+		    }
+		});
     </script>
 
 </body>
